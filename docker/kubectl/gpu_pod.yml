@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ezout-vision
+spec:
+  nodeSelector:
+    cloud.google.com/gke-accelerator: nvidia-tesla-t4
+  tolerations:
+  - key: ""
+    operator: "Exists"
+    effect: ""
+  containers:
+  - name: ezout-vision-ts
+    image: us-docker.pkg.dev/ezout-vision-402700/ezout-vision/ezout-vision/yolonas-ts-deploy

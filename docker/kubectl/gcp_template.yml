@@ -1,0 +1,50 @@
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: "ezout-vision"
+  namespace: "default"
+  labels:
+    app: "ezout-vision"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: "ezout-vision"
+  nodeSelector:
+    cloud.google.com/gke-accelerator: nvidia-tesla-t4
+  tolerations:
+  - key: ""
+    operator: "Exists"
+    effect: ""
+  template:
+    metadata:
+      labels:
+        app: "ezout-vision"
+    spec:
+      containers:
+      - name: "yolonas-ts-deploy-sha256-1"
+        image: "us-docker.pkg.dev/ezout-vision-402700/ezout-vision/ezout-vision/yolonas-ts-deploy@sha256:1861bd2d59f9a48a2efb9e265433edcbdb92bf5db01938cfae98ef0166dcdc8d"
+        command:
+        - "torchserve --start --ncs --model-store /home/model-server/model-store --ts-config\
+          \ config/config.ts.properties"
+---
+apiVersion: "autoscaling/v2beta1"
+kind: "HorizontalPodAutoscaler"
+metadata:
+  name: "ezout-vision-hpa-w5se"
+  namespace: "default"
+  labels:
+    app: "ezout-vision"
+spec:
+  scaleTargetRef:
+    kind: "Deployment"
+    name: "ezout-vision"
+    apiVersion: "apps/v1"
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: "Resource"
+    resource:
+      name: "cpu"
+      targetAverageUtilization: 80

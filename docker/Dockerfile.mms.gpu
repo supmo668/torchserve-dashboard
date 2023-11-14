@@ -1,0 +1,15 @@
+FROM awsdeeplearningteam/multi-model-server:latest-gpu AS base
+
+RUN python3 -m pip install -U pip && \
+    pip3 install --no-cache-dir --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple -U ezout-yolovision \
+    && pip install --no-cache-dir mxnet-cu92mkl==1.4.0
+
+FROM base AS runner
+
+USER model-server
+WORKDIR /home/model-server
+ENV TEMP=/home/model-server/tmp
+ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
+CMD ["serve"]
+
+LABEL maintainer="ezout team : info@ezout.store"

@@ -1,0 +1,7 @@
+[submodule "ezout-yolonas-produce-checkout-demo"]
+	path = hf_examples/ezout-yolonas-produce-checkout-demo
+	url = https://huggingface.co/EzOut/ezout-yolonas-produce-checkout-demo
+	
+[submodule "serve"]
+	path = serve
+	url = https://github.com/pytorch/serve.git

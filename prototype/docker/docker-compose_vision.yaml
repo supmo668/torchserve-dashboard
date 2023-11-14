@@ -1,0 +1,18 @@
+# Run the script from the home directory 'autonomous_cart' 
+version: '3.0'
+services:
+  ezout_vision:
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    user: root
+    build:
+      context: ./
+      dockerfile: ./deploy/vision_dev.Dockerfile
+    env_file:
+      - ./EzOutVision/config/.env
+    container_name: ezout_vision
+    # Change the command to run the demo
+    command: --bind 0.0.0.0:5000
+    ports:
+      - 5000:5000
+      

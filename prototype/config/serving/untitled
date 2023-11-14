@@ -1,0 +1,1 @@
+ExecStart=/home/ubuntu/.local/bin/gunicorn —-workers 3 --bind unix:flask_aws.sock -m 007 app:app

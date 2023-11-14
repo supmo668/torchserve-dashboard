@@ -1,0 +1,11 @@
+[Unit]
+Description=Gunicorn Service EzOut Vision Flask app
+After=network.target
+[Service]
+User=ubuntu
+Group=www-data
+Environment="PATH=/root/EZOutVision"
+WorkingDirectory=/root/EZOutVision
+ExecStart=/usr/bin/gunicorn --bind 0.0.0.0:5000 wsgi:app
+[Install]
+WantedBy=multi-user.target

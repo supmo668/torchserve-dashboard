@@ -1,0 +1,77 @@
+{
+  "resource": "/detect-lambda",
+  "path": "/detect-lambda",
+  "httpMethod": "POST",
+  "headers": {
+    "Accept": "* /*",
+    "Content-Type": "multipart/form-data; boundary=--------------------------402811593498820189416621",
+    "Host": "mxj0lh5def.execute-api.us-east-2.amazonaws.com",
+    "Postman-Token": "7f89d2e7-581c-41b0-a9fc-1ab74b874998",
+    "X-Amzn-Trace-Id": "Root=1-642b2def-70f83e461f51d88514336ad1",
+    "X-Forwarded-For": "58.153.66.187",
+    "X-Forwarded-Port": "443",
+    "X-Forwarded-Proto": "https"
+  },
+  "multiValueHeaders": {
+    "Accept": [
+      "*/*"
+    ],
+    "Content-Type": [
+      "multipart/form-data; boundary=--------------------------402811593498820189416621"
+    ],
+    "Host": [
+      "mxj0lh5def.execute-api.us-east-2.amazonaws.com"
+    ],
+    "Postman-Token": [
+      "7f89d2e7-581c-41b0-a9fc-1ab74b874998"
+    ],
+    "X-Amzn-Trace-Id": [
+      "Root=1-642b2def-70f83e461f51d88514336ad1"
+    ],
+    "X-Forwarded-For": [
+      "58.153.66.187"
+    ],
+    "X-Forwarded-Port": [
+      "443"
+    ],
+    "X-Forwarded-Proto": [
+      "https"
+    ]
+  },
+  "queryStringParameters": None,
+  "multiValueQueryStringParameters": None,
+  "pathParameters": None,
+  "stageVariables": None,
+  "requestContext": {
+    "resourceId": "3wcct5",
+    "resourcePath": "/detect-lambda",
+    "httpMethod": "POST",
+    "extendedRequestId": "C0QdiFFCCYcF6UQ=",
+    "requestTime": "03/Apr/2023: 19: 50: 07 +0000",
+    "path": "/dev/detect-lambda",
+    "accountId": "380955945980",
+    "protocol": "HTTP/1.1",
+    "stage": "dev",
+    "domainPrefix": "mxj0lh5def",
+    "requestTimeEpoch": 1680551407953,
+    "requestId": "f71629b1-c415-45b0-99da-52d29ec15d71",
+    "identity": {
+      "cognitoIdentityPoolId": None,
+      "accountId": None,
+      "cognitoIdentityId": None,
+      "caller": None,
+      "sourceIp": "58.153.66.187",
+      "principalOrgId": None,
+      "accessKey": None,
+      "cognitoAuthenticationType": None,
+      "cognitoAuthenticationProvider": None,
+      "userArn": None,
+      "userAgent": None,
+      "user": None
+    },
+    "domainName": "mxj0lh5def.execute-api.us-east-2.amazonaws.com",
+    "apiId": "mxj0lh5def"
+  },
+  "body": None,
+  "isBase64Encoded": False
+}

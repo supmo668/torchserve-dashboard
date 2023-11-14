@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+
+  ts:  # This is equivalent to your `--name ts` in the Docker run command
+    build:
+      context: .  # Assuming the Dockerfile is in the current directory
+      dockerfile: Dockerfile.ezout-vision.gpu  # Your Dockerfile name
+      args:
+        - no-cache=true  # Equivalent to --no-cache in Docker build
+    image: awsdeeplearningteam/multi-model-server:ezout-vision-latest  # The image name
+    container_name: mms-ezout-vision  # Sets the container name to 'ts'
+    restart: unless-stopped  # Keeps the container running
+    ports:
+      - "8000:8080"  # Maps port 8080 in the container to port 8080 on the host
+      - "8001:8081"  # Maps port 8081 in the container to port 8081 on the host
+    volumes:
+      - ./modelstore:/home/model-server/model-store  # Maps the modelstore directory
+      - ./config:/home/model-server/config
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]  # Enables GPU support
+    command: multi-model-server --start --model-store /home/model-server/model-store --ts-config config/config.properties
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
