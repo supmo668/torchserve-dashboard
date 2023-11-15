@@ -1,2 +1,3 @@
 "altair<5"
 streamlit==1.11.1
+torchserve==0.9.0
