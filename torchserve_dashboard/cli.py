@@ -16,5 +16,5 @@ logger.setLevel(logging.INFO)
 def main(ctx: click.Context, args: Any, **kwargs: Any):
     dirname = os.path.dirname(__file__)
     filename = os.path.join(dirname, 'dash.py')
-    logger.log(f"Arguments:\nArgs:\n{args}\nKwargs:\n{kwargs}")
+    logger.info(f"Arguments:\nArgs:\n{args}\nKwargs:\n{kwargs}")
     ctx.forward(streamlit.cli.main_run, target=filename, args=args)
