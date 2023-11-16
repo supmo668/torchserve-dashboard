@@ -1,4 +1,6 @@
 #!/bin/bash
+# Default entrypoint script presented in AWS MMS server
+
 set -e
 
 if [[ "$1" = "serve" ]]; then

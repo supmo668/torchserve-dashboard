@@ -10,17 +10,17 @@ default_handler="$PWD/handler/model_handler:handle"
 EXPORT_PATH="modelstore"
 # soft-coded
 MODEL=${1:-web_google-large-dino-20231011_T141010}
-MODEL_STORE=${2:-"./modelstore"}
+MODEL_CKPTS=${2:-"../checkpoint"}
 HANDLER=${3:-$default_handler}
 VERSION=${4:-1.0.0}
 # script
-MODEL_PATH=$MODEL_STORE/$MODEL/$ckpt_file
+MODEL_PATH=$MODEL_CKPTS/$MODEL/$ckpt_file
 mkdir -p $EXPORT_PATH
 
 echo "Creating model archiv from:..."
-echo "    $MODEL_STORE"
+echo "    $MODEL_CKPTS"
 echo "    $HANDLER"
-echo "    $(dirname "$MODEL_STORE")/data.yaml"
+echo "    $(dirname "$MODEL_PATH")/data.yaml"
 echo "exporting to: $export_path"
 torch-model-archiver -f \
   --model-name=$MODEL \

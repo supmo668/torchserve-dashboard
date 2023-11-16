@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  torchserve:
+    build:
+      context: .
+      # Uses one of the dockerfile
+      dockerfile: Dockerfile.ts-dashboard
+      args:
+        - no-cache=true
+    # name of image + container built
+    image: pytorch/torchserve:ezout-vision-latest
+    container_name: ezout-vision-ts-grafana
+    ports:
+      - "8105:8105"
+      - "8080:8080"
+      - "8081:8081"
+      - "8082:8082"
+      - "7070:7070"
+      - "7071:7071"
+    volumes:
+      - ./modelstore:/home/model-server/model-store
+      - ./config:/home/model-server/config
+      - ./entrypoint:/usr/local/bin
+    # command: serve
+    environment:
+      - METRICS_URL=http://prometheus:9090
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3030:3030"
+    volumes:
+      - ./config/grafana:/etc/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=ezout_admin
+  

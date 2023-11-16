@@ -20,6 +20,9 @@ Assumes the model archiv and configuration to be in the following local director
 - ./modelstore:/home/model-server/model-store
 - ./config:/home/model-server/config
 ```
+Other dockerfile of choice compatible with the dockercompose file (require editing dockercompose.yaml):
+- Dockerfile.ts-dashboard [GitHub](https://github.com/cceyda/torchserve-dashboard/tree/main)
+
 [//]: # "All the references in this file should be actual links because this file would be used by docker hub. DO NOT use relative links or section tagging."
 
 # FROM ORIGINAL REPO

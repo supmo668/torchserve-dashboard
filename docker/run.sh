@@ -1,1 +1,1 @@
-docker-compose -f dockercompose.ts-grafana-ezout.yml up -d
+docker-compose -f dockercompose.ts-dashboard-grafana-ezout.yml up -d

@@ -1,9 +1,10 @@
 #!/bin/bash
+# Default entrypoint script presented in TorchServe
 set -e
 
 if [[ "$1" = "serve" ]]; then
     shift 1
-    multi-model-server --start --mms-config config.properties
+    torchserve --start --ts-config /home/model-server/config.properties
 else
     eval "$@"
 fi
