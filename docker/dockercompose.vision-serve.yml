@@ -1,0 +1,56 @@
+
+version: '3'
+
+services:
+ torchserve:
+    build:
+      context: .
+      # Uses one of the dockerfile
+      dockerfile: Dockerfile.ts-dashboard.serve
+      args:
+        - no-cache=true
+    ports:
+      - "8105:8105"
+    # name of image + container built
+    image: pytorch/torchserve:ezout-vision-serve
+    container_name: ezout-vision-serve
+    volumes:
+      # mount to reduce start-up time
+      - ./modelstore:/home/model-server/modelstore
+    # command arguments (serve / train)
+    command: serve
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+ prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus:/etc/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+ grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3030:3030"
+    volumes:
+      - ./config/grafana:/etc/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=ezout_admin
+#
+#In this Docker Compose file, we have three services:
+#
+#1. `torchserve`: This service is responsible for serving the PyTorch model. It uses the `pytorch/torchserve:ezout-vision-serve` image. The model is stored in the `./modelstore` directory on the host machine and is mounted to the `/home/model-server/modelstore` directory in the container. The service exposes port 8105.
+#
+#2. `prometheus`: This service is responsible for monitoring the application. It uses the `prom/prometheus:latest` image. The configuration file is stored in the `./config/prometheus` directory on the host machine and is mounted to the `/etc/prometheus` directory in the container. The service exposes port 9090.
+#
+#3. `grafana`: This service is responsible for visualizing the application metrics. It uses the `grafana/grafana:latest` image. The configuration file is stored in the `./config/grafana` directory on the host machine and is mounted to the `/etc/grafana` directory in the container. The service exposes port 3030.
+#
+#The `torchserve` service is deployed with GPU support. The `grafana` service is configured with the default admin password `

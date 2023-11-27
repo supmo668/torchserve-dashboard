@@ -1,0 +1,18 @@
+
+FROM pytorch/torchserve:latest-gpu
+
+RUN python -m pip install -U pip && \
+    pip install --no-cache-dir --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple -U ezout-yolovision && \
+    pip install tensorboard
+
+
+COPY ./entrypoint /usr/local/bin
+COPY ./config /home/model-server/config
+COPY ./yolonas_train /home/model-server/yolonas_train
+
+USER root
+RUN chmod +x /usr/local/bin/dockerd-entrypoint.ts-dashboard.sh
+ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.ts-dashboard.sh"]
+
+# Run Command
+CMD ["train"]
