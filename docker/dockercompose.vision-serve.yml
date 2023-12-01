@@ -1,25 +1,30 @@
-
 version: '3'
 
 services:
- torchserve:
+  torchserve:
     build:
       context: .
       # Uses one of the dockerfile
       dockerfile: Dockerfile.ts-dashboard.serve
       args:
         - no-cache=true
-    ports:
-      - "8105:8105"
     # name of image + container built
     image: pytorch/torchserve:ezout-vision-serve
     container_name: ezout-vision-serve
+    ports:
+      - "8105:8105"
+      - "8080:8080"
+      - "8081:8081"
+      - "8082:8082"
+      - "7070:7070"
+      - "7071:7071"
     volumes:
-      # mount to reduce start-up time
       - ./modelstore:/home/model-server/modelstore
-    # command arguments (serve / train)
-    command: serve
+      - ./config:/home/model-server/config
+      - ./entrypoint:/usr/local/bin
+    # command: serve
     environment:
+      - METRICS_URL=http://prometheus:9090
       - NVIDIA_VISIBLE_DEVICES=all
     deploy:
       resources:
@@ -27,7 +32,7 @@ services:
           devices:
             - capabilities: [gpu]
 
- prometheus:
+  prometheus:
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
@@ -36,7 +41,7 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
 
- grafana:
+  grafana:
     image: grafana/grafana:latest
     ports:
       - "3030:3030"

@@ -8,8 +8,8 @@ services:
       dockerfile: Dockerfile.yolonas.train
       args:
         - no-cache=true
-      ports:
-      - "6006:6006"
+    ports:
+    - "6006:6006"
     # name of image + container built
     image: pytorch/torchserve:ezout-vision-train
     container_name: ezout-vision-train
@@ -18,7 +18,7 @@ services:
       - ./checkpoint:/home/model-server/checkpoint
       - ./config:/home/model-server/config
     # command arguments (serve / train)
-    command: ["train", "-I", "./dataset", "-C", "datasets_11202023"]
+    command: ["train", "-I", "./dataset", "-C", "datasets_11202023", "--chkpt", "checkpoint/datasets_11202023T20231127_T035439/ckpt_latest.pth", "-LR", "5.5e-6"]
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
     deploy:

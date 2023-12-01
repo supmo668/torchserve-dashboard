@@ -15,9 +15,10 @@ from super_gradients.training import models, Trainer
 from super_gradients.training.dataloaders.dataloaders import (
     coco_detection_yolo_format_train, coco_detection_yolo_format_val
 )
-from super_gradients.training.losses import PPYoloELoss
-from super_gradients.training.metrics import DetectionMetrics_050
-from super_gradients.training.models.detection_models.pp_yolo_e import PPYoloEPostPredictionCallback
+# from super_gradients.training.losses import PPYoloELoss
+# from super_gradients.training.metrics import DetectionMetrics_050
+# from super_gradients.training.models.detection_models.pp_yolo_e import PPYoloEPostPredictionCallback
+import train_config
 
 from visualize import plot_detections
 from utils import get_data_conf
@@ -76,7 +77,11 @@ class TRAIN_CONF:
         self.LR = learning_rate
         # Load from checkpoint (path to .pth )
         self.FROM_CHECKPOINT = checkpoint
-        self.EXPERIMENT_NAME = f"{job_name}T{datetime_str}"
+        if not checkpoint:
+            self.EXPERIMENT_NAME = f"{job_name}T{datetime_str}"
+        else:
+            # use the name of directory to the path of checkpoint provided
+            self.EXPERIMENT_NAME = Path(checkpoint).parent.name  
         self.CHECKPOINT_OUTPUT_DIR = self.CHECKPOINT_DIR/self.EXPERIMENT_NAME
         self.CHECKPOINT_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         logger.info(f"Checkpoint output directory: {self.CHECKPOINT_OUTPUT_DIR}")
@@ -88,7 +93,7 @@ def createDataset(PATH_CONF, TRAIN_CONF):
     data_conf = get_data_conf(PATH_CONF)
     logger.info(f"Creating dataset from: {PATH_CONF.DATASET_PATH}")
     datasets = dict()
-    for tt in [sp for sp in ['train', 'tesXt', 'valid'] if data_conf.get(sp)]:
+    for tt in [sp for sp in ['train', 'test', 'valid'] if data_conf.get(sp)]:
         # Check for existence of split
         logger.info(f"Loading splits: {tt}.")
         logger.info(
@@ -115,7 +120,7 @@ def createDataset(PATH_CONF, TRAIN_CONF):
     return datasets
 
 def train(PATH_CONF, TRAIN_CONF):
-    # Initialize trainer
+    '''Initialize trainer'''
     data_conf = get_data_conf(PATH_CONF)
     # COPY data yaml file into checkpoint directory for packaging purpose
     if (TRAIN_CONF.CHECKPOINT_DIR/PATH_CONF.DATASET_CONF_PATH.name).exists():
@@ -130,13 +135,14 @@ def train(PATH_CONF, TRAIN_CONF):
     datasets = createDataset(PATH_CONF, TRAIN_CONF)
     ######## Model
     if TRAIN_CONF.FROM_CHECKPOINT:
-        # LOAD from checkpoint .pth
+        logger.info(f"Training from checkpoint: {TRAIN_CONF.FROM_CHECKPOINT}")
         model = models.get(
             TRAIN_CONF.model_arch,
             num_classes=len(data_conf.get('names')),
             checkpoint_path=str(TRAIN_CONF.FROM_CHECKPOINT)
         ).to(DEVICE)
     else:
+        logger.info(f"Training from pre-trained: {TRAIN_CONF.model_arch}")
         model = models.get(
             TRAIN_CONF.model_arch, 
             num_classes=len(data_conf.get('names')), 
@@ -144,135 +150,110 @@ def train(PATH_CONF, TRAIN_CONF):
         ).to(DEVICE)
 
     # TRAINING params
-    train_params = {
-        'silent_mode': False,
-        "average_best_models":True,
-        "warmup_mode": "linear_epoch_step",
-        "warmup_initial_lr": 2e-6,
-        "lr_warmup_epochs": 8,
-        "initial_lr": TRAIN_CONF.LR,
-        "lr_mode": "cosine",
-        "cosine_final_lr_ratio": 0.1,
-        "optimizer": "Adam",
-        "optimizer_params": {"weight_decay": 0.0001},
-        "zero_weight_decay_on_bias_and_bn": True,
-        "ema": True,
-        "ema_params": {"decay": 0.9, "decay_type": "threshold"},
-        "max_epochs": TRAIN_CONF.MAX_EPOCHS,
-        "mixed_precision": True, 
-        "loss": PPYoloELoss(
-            use_static_assigner=False,
-            num_classes=len(data_conf.get('names')),
-            reg_max=16
-        ),
-        "valid_metrics_list": [
-            DetectionMetrics_050(
-                score_thres=0.1,
-                top_k_predictions=100,   # 300
-                num_cls=len(data_conf.get('names')),
-                normalize_targets=True,
-                post_prediction_callback=PPYoloEPostPredictionCallback(
-                    score_threshold=0.01,
-                    nms_top_k=1000,
-                    max_predictions=300,
-                    nms_threshold=0.7
-                )
-            )
-        ],
-        "metric_to_watch": 'mAP@0.50'
-    }
     trainer.train(
         model=model, 
-        training_params=train_params, 
+        training_params=train_config.get_training_parameters(
+            TRAIN_CONF, len(data_conf.get('names'))
+        ), 
         train_loader=datasets['train'], 
         valid_loader=datasets['valid']
     )
     return trainer
     
 def evaluate(
-    trainer, datasets, path_conf, train_conf, best_model="ckpt_latest.pth"):
+    trainer, datasets, path_conf, train_conf, best_model="ckpt_best.pth"):
     data_conf = get_data_conf(path_conf)
     #####  Evaluate
     if not hasattr(path_conf, 'FROM_CHECKPOINT'):
         path_conf.FROM_CHECKPOINT = train_conf.CHECKPOINT_OUTPUT_DIR/best_model
+        assert path_conf.FROM_CHECKPOINT.exists(), f"Checkpoint path: {path_conf.FROM_CHECKPOINT} don't exists."
     else:
         assert path_conf.FROM_CHECKPOINT.exists(), f"Using checkpoint {path_conf.FROM_CHECKPOINT} but not exists"
-        logger.info(f"Loading from checkpoint {path_conf.FROM_CHECKPOINT}")
+        logger.info(f"Evaluating from checkpoint {path_conf.FROM_CHECKPOINT}")
     best_model = models.get(
         train_conf.model_arch,
         num_classes=len(data_conf.get('names')),
         checkpoint_path=str(path_conf.FROM_CHECKPOINT)).to(DEVICE)
 
-    if data_conf.get('test', False):
-        from onemetric.cv.object_detection import ConfusionMatrix
-        evaluation = trainer.test(
-            model=best_model,
-            test_loader=datasets['test'],
-            test_metrics_list=DetectionMetrics_050(
-                score_thres=0.1, 
-                top_k_predictions=300, 
-                num_cls=len(data_conf.get('names')),
-                normalize_targets=True, 
-                post_prediction_callback=PPYoloEPostPredictionCallback(
-                    score_threshold=0.01, 
-                    nms_top_k=1000, 
-                    max_predictions=300,
-                    nms_threshold=0.7
-                )
+    if not (data_conf.get('test') and data_conf.get('valid')):
+        logger.info(f"Both test & valid test set is not available")
+        return 
+    else:
+        if data_conf.get('test'): 
+            test_set = datasets['test']
+        elif data_conf.get('valid'): 
+            test_set = datasets['valid']
+    
+    from onemetric.cv.object_detection import ConfusionMatrix
+    evaluation = trainer.test(
+        model=best_model,
+        test_loader=test_set,
+        test_metrics_list=train_config.DetectionMetrics_050(
+            score_thres=0.1, 
+            top_k_predictions=300, 
+            num_cls=len(data_conf.get('names')),
+            normalize_targets=True, 
+            post_prediction_callback=train_config.PPYoloEPostPredictionCallback(
+                score_threshold=0.01, 
+                nms_top_k=1000, 
+                max_predictions=300,
+                nms_threshold=0.7
             )
         )
-        evaluation = {k:float(v) for k,v in evaluation.items()}
-        with open(
-            train_conf.CHECKPOINT_OUTPUT_DIR/'model_evaluation_metric.json', 'w') as fp:
-            json.dump(evaluation, fp)
-        tt = 'test'
-        ds = sv.DetectionDataset.from_yolo(
-            images_directory_path=(path_conf.DATASET_CONF_PATH/Path(data_conf.get(tt))).resolve(),
-            annotations_directory_path=(path_conf.DATASET_CONF_PATH/Path(data_conf.get(tt))).resolve().parent/'labels',
-            data_yaml_path=path_conf.DATASET_CONF_PATH,
-            force_masks=False
+    )
+    evaluation = {
+        k:float(v) for k,v in evaluation.items()}
+    with open(
+        train_conf.CHECKPOINT_OUTPUT_DIR/'model_evaluation_metric.json', 'w') as fp:
+        json.dump(evaluation, fp)
+    # ds = sv.DetectionDataset.from_yolo(
+    #     images_directory_path=(path_conf.DATASET_CONF_PATH/Path(data_conf.get(test_set))).resolve(),
+    #     annotations_directory_path=(path_conf.DATASET_CONF_PATH/Path(data_conf.get(test_set))).resolve().parent/'labels',
+    #     data_yaml_path=path_conf.DATASET_CONF_PATH,
+    #     force_masks=False
+    # )
+    logger.info(f"Dataset size:\n{len(test_set)}")
+    ### Create predictions 
+    predictions = {}
+    for image_name, image in test_set.images.items():
+        result = list(best_model.predict(image, conf=train_conf.CONFIDENCE_THRESHOLD))[0]
+        detections = sv.Detections(
+            xyxy=result.prediction.bboxes_xyxy,
+            confidence=result.prediction.confidence,
+            class_id=result.prediction.labels.astype(int)
         )
-        ### Create predictions 
-        predictions = {}
-        for image_name, image in ds.images.items():
-            result = list(best_model.predict(image, conf=train_conf.CONFIDENCE_THRESHOLD))[0]
-            detections = sv.Detections(
-                xyxy=result.prediction.bboxes_xyxy,
-                confidence=result.prediction.confidence,
-                class_id=result.prediction.labels.astype(int)
-            )
-            predictions[image_name] = detections
-        logger.info(f"Predictions:\n{predictions}")
-        keys = list(ds.images.keys())
-        logger.info(f"Available keys:{keys}")
-        annotation_batches, prediction_batches = [], []
-        ### Sort prediction by keys
-        for key in keys:
-            annotation=ds.annotations[key]
-            annotation_batch = np.column_stack((
-                annotation.xyxy, 
-                annotation.class_id
-            )) 
-            annotation_batches.append(annotation_batch)
-            #
-            prediction=predictions[key]
-            prediction_batch = np.column_stack((
-                prediction.xyxy, 
-                prediction.class_id,
-                prediction.confidence
-            ))
-            prediction_batches.append(prediction_batch)
-            
-        confusion_matrix = ConfusionMatrix.from_detections(
-            true_batches=annotation_batches, 
-            detection_batches=prediction_batches,
-            num_classes=len(ds.classes),
-            conf_threshold=train_conf.CONFIDENCE_THRESHOLD
-        )
-        confusion_matrix.plot(
-            train_conf.CHECKPOINT_OUTPUT_DIR/"confusion_matrix.png",
-            class_names=ds.classes
-        )
+        predictions[image_name] = detections
+    logger.info(f"Predictions:\n{predictions}")
+    keys = list(test_set.images.keys())
+    annotation_batches, prediction_batches = [], []
+    ### Sort prediction by keys
+    for key in keys:
+        annotation=test_set.annotations[key]
+        annotation_batch = np.column_stack((
+            annotation.xyxy, 
+            annotation.class_id
+        )) 
+        annotation_batches.append(annotation_batch)
+        #
+        prediction=predictions[key]
+        prediction_batch = np.column_stack((
+            prediction.xyxy, 
+            prediction.class_id,
+            prediction.confidence
+        ))
+        prediction_batches.append(prediction_batch)
+        
+    confusion_matrix = ConfusionMatrix.from_detections(
+        true_batches=annotation_batches, 
+        detection_batches=prediction_batches,
+        num_classes=len(test_set.classes),
+        conf_threshold=train_conf.CONFIDENCE_THRESHOLD
+    )
+    confusion_matrix.plot(
+        train_conf.CHECKPOINT_OUTPUT_DIR/"confusion_matrix.png",
+        class_names=test_set.classes
+    )
+    logger.info(f"Evaluations saved to checkpoint directory:\n{train_conf.CHECKPOINT_OUTPUT_DIR}")
         
 def main(args):
     path_conf = PATH_CONF(
