@@ -3,25 +3,25 @@
 ## Pre-req
 Model artifacts should be available to be either mapped or copied into 
 ## Quickstart usage with docker
-Use docker compose to create the container 
+Use docker compose to create the containers
 ```
 docker-compose -f dockercompose.ts-ezout.yml up -d
 ```
-1. TorchServe only
+1. TorchServe (w/ dashboard, Prometheus/Grafana) 
+  ```
+  docker-compose -f dockercompose.vision-serve.yml up -d
+  ```
+  Assumes the model archiv and configuration to be in the following local directory which will be mapped to the docker container
+  ```
+  - ./modelstore:/home/model-server/model-store
+  - ./config:/home/model-server/config
+  ```
+  Other dockerfile of choice compatible with the dockercompose file (require editing dockercompose.yaml):
+  - Dockerfile.ts-dashboard [GitHub](https://github.com/cceyda/torchserve-dashboard/tree/main)
+2. Training
 ```
-docker-compose -f dockercompose.ts-ezout.yml up -d
-```
-2. TorchServe with Prometheus/Grafana
-```
-docker-compose -f dockercompose.ts-grafana-ezout.yml up -d
-```
-Assumes the model archiv and configuration to be in the following local directory which will be mapped to the docker container
-```
-- ./modelstore:/home/model-server/model-store
-- ./config:/home/model-server/config
-```
-Other dockerfile of choice compatible with the dockercompose file (require editing dockercompose.yaml):
-- Dockerfile.ts-dashboard [GitHub](https://github.com/cceyda/torchserve-dashboard/tree/main)
+docker-compose -f dockercompose.vision-train.yml up -d
+
 
 [//]: # "All the references in this file should be actual links because this file would be used by docker hub. DO NOT use relative links or section tagging."
 

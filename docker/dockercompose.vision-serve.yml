@@ -26,11 +26,11 @@ services:
     environment:
       - METRICS_URL=http://prometheus:9090
       - NVIDIA_VISIBLE_DEVICES=all
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - capabilities: [gpu]
 
   prometheus:
     image: prom/prometheus:latest
