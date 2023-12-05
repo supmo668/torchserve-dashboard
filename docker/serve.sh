@@ -1,1 +1,1 @@
-docker-compose -f dockercompose.ts-dashboard-grafana.yml up -d
+docker compose -f dockercompose.vision-serve.yml up -d
