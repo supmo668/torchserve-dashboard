@@ -34,7 +34,3 @@ docker-compose -f dockercompose.vision-train.yml up -d
 
 [//]: # "All the references in this file should be actual links because this file would be used by docker hub. DO NOT use relative links or section tagging."
 
-
-## Other references
-
-1. [MMS from AWS](README-MMS.md)
