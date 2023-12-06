@@ -1,0 +1,1 @@
+docker run -dit --network=docker_default--name ngrok_charming -e NGROK_AUTHTOKEN=$NGROK_AUTHTOKEN ngrok/ngrok:latest tunnel --label edge=edghts_2Z9ChYoTPxu9fI2FRmfrrFNAgSZ http://localhost:8080
