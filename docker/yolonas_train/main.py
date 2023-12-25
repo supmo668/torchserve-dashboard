@@ -206,16 +206,16 @@ def evaluate(
     with open(
         train_conf.CHECKPOINT_OUTPUT_DIR/'model_evaluation_metric.json', 'w') as fp:
         json.dump(evaluation, fp)
-    # ds = sv.DetectionDataset.from_yolo(
-    #     images_directory_path=(path_conf.DATASET_CONF_PATH/Path(data_conf.get(test_set))).resolve(),
-    #     annotations_directory_path=(path_conf.DATASET_CONF_PATH/Path(data_conf.get(test_set))).resolve().parent/'labels',
-    #     data_yaml_path=path_conf.DATASET_CONF_PATH,
-    #     force_masks=False
-    # )
+    ds_test = sv.DetectionDataset.from_yolo(
+        images_directory_path=(path_conf.DATASET_CONF_PATH/Path(data_conf.get(test_set))).resolve(),
+        annotations_directory_path=(path_conf.DATASET_CONF_PATH/Path(data_conf.get(test_set))).resolve().parent/'labels',
+        data_yaml_path=path_conf.DATASET_CONF_PATH,
+        force_masks=False
+    )
     logger.info(f"Dataset size:\n{len(test_set)}")
     ### Create predictions 
     predictions = {}
-    for image_name, image in test_set.images.items():
+    for image_name, image in test_set.ds_test.items():
         result = list(best_model.predict(image, conf=train_conf.CONFIDENCE_THRESHOLD))[0]
         detections = sv.Detections(
             xyxy=result.prediction.bboxes_xyxy,
