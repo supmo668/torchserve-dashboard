@@ -24,8 +24,8 @@ torchserve-dashboard --server.port 8105 -- --config_path ./torchserve.properties
 #OR provide a custom configuration 
 torchserve-dashboard -- --config_path ./torchserve.properties --model_store ./model_store
 ```
-[Compatibility updates]
-To work with newer version of Steamlit, update/install the following packages:
+### [Compatibility updates]
+To work with newer version of Steamlit (1.29.0), update/install the following packages:
 ```
 pip install -r requirements_extra.txt
 ```
