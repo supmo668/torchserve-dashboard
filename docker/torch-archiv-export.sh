@@ -10,7 +10,7 @@ default_handler="$PWD/handler/model_handler:handle"
 EXPORT_PATH="modelstore"
 # soft-coded
 MODEL=${1:-web_google-large-dino-20231011_T141010}
-MODEL_CKPTS=${2:-"../checkpoint"}
+MODEL_CKPTS=${2:-"./checkpoint"}
 HANDLER=${3:-$default_handler}
 VERSION=${4:-1.0.0}
 # script

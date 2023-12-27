@@ -31,7 +31,11 @@ docker-compose -f dockercompose.ts-ezout.yml up -d
 ```
 docker-compose -f dockercompose.vision-train.yml up -d
 ```
-
+3. Hosting
+* First expore the model via the script ```torch-archiv-export.sh``` by install `torch-model-archiver`:
+  ```
+  python -m pip install -r requirements.txt
+  ```
 [//]: # "All the references in this file should be actual links because this file would be used by docker hub. DO NOT use relative links or section tagging."
 
 
