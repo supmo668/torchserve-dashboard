@@ -24,7 +24,11 @@ torchserve-dashboard --server.port 8105 -- --config_path ./torchserve.properties
 #OR provide a custom configuration 
 torchserve-dashboard -- --config_path ./torchserve.properties --model_store ./model_store
 ```
-
+[Compatibility updates]
+To work with newer version of Steamlit, update/install the following packages:
+```
+pip install -r requirements_extra.txt
+```
 :exclamation: Keep in mind that If you change any of the `--config_path`,`--model_store`,`--metrics_location`,`--log_location` options while there is a torchserver already running before starting torch-dashboard they won't come into effect until you stop&start torchserve. These options are used instead of their respective environment variables `TS_CONFIG_FILE, METRICS_LOCATION, LOG_LOCATION`.
 
 OR 
