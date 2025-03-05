@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  yolonas-train:
+    build:
+      context: .
+      # Uses one of the dockerfile
+      dockerfile: Dockerfile.yolonas.train
+      args:
+        - no-cache=true
+    ports:
+    - "6006:6006"
+    # name of image + container built
+    image: pytorch/torchserve:ezout-vision-train
+    container_name: ezout-vision-train
+    volumes:
+      - ./dataset:/home/model-server/dataset
+      - ./checkpoint:/home/model-server/checkpoint
+      - ./config:/home/model-server/config
+    # command arguments (serve / train)
+    command: ["train", "-I", "./dataset", "-C", "datasets_11202023", "--chkpt", "checkpoint/datasets_11202023T20231127_T035439/ckpt_latest.pth", "--val_only"]
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]

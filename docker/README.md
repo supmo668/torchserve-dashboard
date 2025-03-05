@@ -38,6 +38,13 @@ docker-compose -f dockercompose.vision-train.yml up -d
   ```
 [//]: # "All the references in this file should be actual links because this file would be used by docker hub. DO NOT use relative links or section tagging."
 
+## Detail Dev Resources
+
+### Design: Containerized Service 
+The docker definitions are the application environment namely docker compose files:
+* dockercompose.vision-serve.yml
+* dockercompose.vision-train.yml
+  ... etc
 
 ## Other references
 
